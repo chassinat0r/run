@@ -55,9 +55,11 @@ int main(int argc, char *argv[]) {
             case SDLK_ESCAPE:
                 running = false;
                 break; 
+            case SDLK_LEFT:
             case SDLK_a:
                 move_player_left(&player);
                 break;
+            case SDLK_RIGHT:
             case SDLK_d:
                 move_player_right(&player);
                 break;
