@@ -1,7 +1,7 @@
 #include <SDL.h>
 #include <stdbool.h>
 
-int get_key() {
+int key_down() {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
@@ -15,3 +15,16 @@ int get_key() {
     }
     return false;
 }
+
+int key_up() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+            case SDL_KEYUP:
+                return event.key.keysym.sym;
+                break;
+        }
+    }
+    return false;
+}
+

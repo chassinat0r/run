@@ -1,6 +1,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-int get_key();
+int key_down();
+int key_up();
 
 #endif

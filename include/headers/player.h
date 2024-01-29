@@ -2,11 +2,16 @@
 #define PLAYER_H
 
 struct player_object {
-    int x;
+    float x;
     int y;
     int width;
     int height;
-    int speed;
+    float speed;
+    float max_speed;
+    float acceleration;
+    float friction;
+    bool left;
+    bool right;
 };
 
 void draw_player(SDL_Renderer *renderer, struct player_object player);
