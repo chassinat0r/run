@@ -1,10 +1,10 @@
-# Run
+# Walls
 
 This is an endless runner game made in C and SDL2.
 
 The goal is to turn left and right to avoid the walls. If you hit the walls you die.
 
-This is my first game in C and SDL so it's not too advanced. 
+This is my first game in C and SDL so it's not too advanced. I did it to get familiar with the SDL2 library.
 
 ## Features
 
@@ -31,7 +31,7 @@ This is my first game in C and SDL so it's not too advanced.
     </tr>
     <tr>
         <td>Walls</td>
-        <td>🟡 To be implemented</td>
+        <td>🟢 Fully working</td>
     </tr>
     <tr>
         <td>Collision</td>
