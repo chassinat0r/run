@@ -15,86 +15,92 @@ float last_frame_time = 0;
 
 struct player_object player;
 
-float grid[GRID_MAX_ITEMS][2];
+struct wall {
+    int start_x;
+    int end_x;
+    float y;
+};
 
-int get_grid_length() {
-    for (int i = 0; i < GRID_MAX_ITEMS; i++) {
-        if (!(grid[i][0] || grid[i][1])) {
+struct wall walls[MAX_WALLS];
+
+int get_num_of_walls() {
+    for (int i = 0; i < MAX_WALLS; i++) {
+        if (!(walls[i].start_x || walls[i].end_x || walls[i].y)) {
             return i;
         }
     }
-    return GRID_MAX_ITEMS;
+    return MAX_WALLS;
+}
+
+void add_wall(int start_x, int end_x, float y) {
+    int index = get_num_of_walls();
+
+    walls[index].start_x = start_x;
+    walls[index].end_x = end_x;
+    walls[index].y = y;
 }
 
 void add_row(float y) {
-    int wall_columns_left = rand() % (GRID_COLUMNS - 1);
-    int wall_columns_right = GRID_COLUMNS - wall_columns_left - 1;
-
-    for (int x = 0; x < wall_columns_left; x++) {
-        int index = get_grid_length();
-
-        grid[index][0] = x;
-        grid[index][1] = y;
-    }
-
-    for (int x = GRID_COLUMNS - 1; x > GRID_COLUMNS - wall_columns_right; x--) {
-        int index = get_grid_length();
-
-        grid[index][0] = x;
-        grid[index][1] = y;
-    }
+    int wall_length_left = rand() % (WALL_COLUMNS - 1);
+    int wall_length_right = WALL_COLUMNS - wall_length_left - 2;
+    
+    add_wall(0, wall_length_left, y);
+    add_wall(WALL_COLUMNS - wall_length_right, WALL_COLUMNS, y);
 }
 
-void delete_grid_space(int index) {
-    int length = get_grid_length();
-    for (int i = index; i < length; i++) {
-        grid[i-1][0] = grid[i][0];
-        grid[i-1][1] = grid[i][1];
+void delete_wall(int index) {
+    int number_of_walls = get_num_of_walls();
+
+    for (int i = index; i < number_of_walls; i++) {
+        walls[i-1] = walls[i];
     }
 
-    grid[length-1][0] = '\0';
-    grid[length-1][1] = '\0';
+    walls[number_of_walls-1].start_x = '\0';
+    walls[number_of_walls-1].end_x = '\0';
+    walls[number_of_walls-1].y = '\0';
 }
 
-void move_grid_down(float change) {
+void move_wall_down(float change) {
     int number_indexes_deleted = 0;
 
-    for (int i = 0; i < get_grid_length(); i++) {
+    for (int i = 0; i < get_num_of_walls(); i++) {
         int index = i - number_indexes_deleted;
-        grid[index][1] -= change;
-        if (grid[index][1] < -1) {
-            delete_grid_space(index);
+        walls[index].y -= change;
+        if (walls[index].y < -1) {
+            delete_wall(index);
             number_indexes_deleted++;
         }
     }
 
-    if (GRID_ROWS - grid[get_grid_length() - 1][1] >= 6) {
-        add_row(GRID_ROWS + 1);
+    if (WALL_ROWS - walls[get_num_of_walls() - 1].y >= 6) {
+        add_row(WALL_ROWS + 1);
     }
-
 }
 
-void init_grid() {
-    for (int i = 0; i < GRID_MAX_ITEMS; i++) {
-        grid[i][0] = '\0';
-        grid[i][1] = '\0';
+void init_walls_array() {
+    for (int i = 0; i < MAX_WALLS; i++) {
+        walls[i].start_x = '\0';
+        walls[i].end_x = '\0';
+        walls[i].y = '\0';
     }
 
-    for (int i = 12; i < GRID_ROWS; i += 7) {
+    for (int i = 12; i < WALL_ROWS; i += 7) {
         add_row(i);
     }
 }
 
-void draw_block(SDL_Renderer *renderer, float x, float y) {
-    SDL_Rect block_rect = {
-        (float)(x * GRID_SPACE_SIZE) + BORDER_LEFT,
-        (float)(GRID_ROWS - y) * GRID_SPACE_SIZE,
-        (int)GRID_SPACE_SIZE,
-        (int)GRID_SPACE_SIZE
-    };
-    
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(renderer, &block_rect);
+void draw_wall(SDL_Renderer *renderer, struct wall w) {
+    for (int x = w.start_x; x < w.end_x; x++) {
+        SDL_Rect block_rect = {
+            (float)(x * WALL_BLOCK_SIZE) + BORDER_LEFT,
+            (float)(WALL_ROWS - w.y) * WALL_BLOCK_SIZE,
+            (int)WALL_BLOCK_SIZE,
+            (int)WALL_BLOCK_SIZE
+        };
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderFillRect(renderer, &block_rect);
+    }
 }
 
 void update(SDL_Renderer *renderer) {
@@ -115,13 +121,13 @@ void update(SDL_Renderer *renderer) {
 
     draw_player(renderer, player);
 
-    for (int i = 0; i < get_grid_length(); i++) {
-        draw_block(renderer, grid[i][0], grid[i][1]);
+    for (int i = 0; i < get_num_of_walls(); i++) {
+        draw_wall(renderer, walls[i]);
     }
 
     SDL_RenderPresent(renderer);
 
-    move_grid_down((float)7 / FRAME_TARGET_TIME);
+    move_wall_down((float)7 / FRAME_TARGET_TIME);
 
     if (player.left) {
         player.speed -= player.acceleration;
@@ -165,7 +171,7 @@ void update(SDL_Renderer *renderer) {
 }
 
 int main(int argc, char *argv[]) {
-    SDL_Window *window = create_window("RUN");
+    SDL_Window *window = create_window("Walls");
     if (!window) {
         printf("Error occurred creating SDL window.\n");
         return;
@@ -178,7 +184,7 @@ int main(int argc, char *argv[]) {
         return;
     }
 
-    init_grid();
+    init_walls_array();
 
     running = true;
 
